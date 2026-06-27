@@ -450,7 +450,7 @@ function filterTable(tbId, q, fields, fval='', ffield='') {
   document.querySelectorAll(`#${tbId} tr[data-row]`).forEach(r=>{
     const d=JSON.parse(r.dataset.row);
     let ok=!q||fields.some(f=>(d[f]||'').toLowerCase().includes(q));
-    if(ok&&fval&&ffield) ok=(d[ffield]||')===fval;
+    if(ok&&fval&&ffield) ok=(d[ffield]||'')===fval;
     r.style.display=ok?'':'none';
   });
 }

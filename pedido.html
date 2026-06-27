@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedido de materiales</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f7f5;--surface:#fff;--surface-1:#f2f2ef;--border:#e5e5e1;--border-strong:#c8c8c2;
+  --text:#1a1a18;--text-secondary:#5c5c58;--text-muted:#9a9a94;
+  --accent:#2563eb;--accent-bg:#eff6ff;--accent-text:#1d4ed8;
+  --success-bg:#f0fdf4;--success:#166534;
+  --danger-bg:#fef2f2;--danger:#991b1b;
+  --radius:8px;--font:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem}
+.wrap{width:100%;max-width:640px}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem}
+.logo i{font-size:28px;color:var(--accent)}
+.logo-text{font-size:20px;font-weight:600}
+.logo-sub{font-size:12px;color:var(--text-muted);margin-top:1px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:1rem}
+.card-head{padding:14px 18px;background:var(--surface-1);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-title{font-size:14px;font-weight:600}
+.card-body{padding:18px}
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.field label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em}
+.field input,.field select,.field textarea{font-family:var(--font);font-size:14px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);width:100%;transition:border-color .12s}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.field textarea{min-height:90px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.full{grid-column:1/-1}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 20px;border-radius:var(--radius);border:none;font-size:14px;font-family:var(--font);cursor:pointer;transition:all .12s;width:100%;font-weight:500}
+.btn-p{background:var(--accent);color:#fff}.btn-p:hover{background:#1d4ed8}
+.btn-p:disabled{background:#93c5fd;cursor:not-allowed}
+.linea{display:grid;grid-template-columns:1fr 80px 100px 36px;gap:6px;align-items:center;margin-bottom:6px}
+.linea select,.linea input{font-family:var(--font);font-size:13px;padding:8px 9px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);width:100%}
+.btn-add{background:transparent;border:1px dashed var(--border-strong);color:var(--text-muted);border-radius:var(--radius);padding:8px;font-size:12px;font-family:var(--font);cursor:pointer;width:100%;margin-top:4px;transition:all .12s}
+.btn-add:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.btn-del{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:18px;padding:0;line-height:1;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--radius)}
+.btn-del:hover{color:var(--danger);background:var(--danger-bg)}
+.col-labels{display:grid;grid-template-columns:1fr 80px 100px 36px;gap:6px;font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.msg{font-size:13px;padding:12px 14px;border-radius:var(--radius);margin-bottom:14px}
+.ms{background:var(--success-bg);color:var(--success)}
+.me{background:var(--danger-bg);color:var(--danger)}
+.mi{background:var(--accent-bg);color:var(--accent-text)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:sp .6s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.success-screen{display:none;text-align:center;padding:3rem 2rem}
+.success-screen i{font-size:56px;color:var(--success);margin-bottom:1rem;display:block}
+.success-screen h2{font-size:20px;font-weight:600;margin-bottom:.5rem}
+.success-screen p{color:var(--text-secondary);font-size:14px;margin-bottom:1.5rem}
+.hint{font-size:11px;color:var(--text-muted);margin-top:4px}
+@media(max-width:480px){.grid2{grid-template-columns:1fr}.linea{grid-template-columns:1fr 60px 80px 32px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">
+    <i class="ti ti-building-warehouse"></i>
+    <div>
+      <div class="logo-text">Solicitud de materiales</div>
+      <div class="logo-sub">Gestión de Almacén</div>
+    </div>
+  </div>
+
+  <div id="form-area">
+    <div id="msg-global"></div>
+
+    <!-- Datos del pedido -->
+    <div class="card">
+      <div class="card-head"><i class="ti ti-building" style="color:var(--accent)"></i><span class="card-title">Datos del pedido</span></div>
+      <div class="card-body">
+        <div class="grid2">
+          <div class="field full">
+            <label>Tu centro *</label>
+            <select id="centro">
+              <option value="">Selecciona tu centro</option>
+              <option>Teatro Calderon</option><option>Scrapworld</option><option>Jackies Music</option>
+              <option>MAD ARTES</option><option>Legazpi</option><option>Teatro Alcala</option>
+              <option>Teatro Apolo</option><option>Lula Club</option><option>PopStar</option>
+              <option>Escuela</option><option>Lirico</option><option>Blondie</option>
+              <option>Teatro Rialto</option><option>OFICINAS BEON</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Fecha en que lo necesitas</label>
+            <input type="date" id="fecha">
+          </div>
+          <div class="field">
+            <label>¿Es urgente?</label>
+            <select id="urgencia">
+              <option value="No">No, en el próximo reparto</option>
+              <option value="Sí">Sí, lo antes posible</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Líneas del catálogo -->
+    <div class="card">
+      <div class="card-head"><i class="ti ti-list" style="color:var(--accent)"></i><span class="card-title">Productos del catálogo</span></div>
+      <div class="card-body">
+        <p style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Selecciona los productos que necesitas. Si no encuentras algo, usa el campo de texto libre más abajo.</p>
+        <div class="col-labels"><span>Producto</span><span>Cantidad</span><span>Unidad</span><span></span></div>
+        <div id="lineas"></div>
+        <button class="btn-add" onclick="addLinea()"><i class="ti ti-plus"></i> Añadir producto</button>
+      </div>
+    </div>
+
+    <!-- Campo libre -->
+    <div class="card">
+      <div class="card-head"><i class="ti ti-pencil" style="color:var(--accent)"></i><span class="card-title">Productos adicionales o notas</span></div>
+      <div class="card-body">
+        <div class="field">
+          <label>Escribe libremente</label>
+          <textarea id="libre" placeholder="Productos que no están en la lista, cantidades especiales, instrucciones de entrega, horarios de acceso..."></textarea>
+          <p class="hint">No te preocupes si no sabes el nombre exacto, escríbelo como puedas.</p>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-p" id="btn-enviar" onclick="enviar()">
+      <i class="ti ti-send"></i> Enviar solicitud
+    </button>
+  </div>
+
+  <!-- Pantalla de éxito -->
+  <div id="success-screen" class="success-screen">
+    <i class="ti ti-circle-check"></i>
+    <h2>¡Solicitud enviada!</h2>
+    <p id="success-msg">Tu pedido ha sido registrado y será procesado próximamente.</p>
+    <button class="btn btn-p" onclick="resetForm()" style="max-width:200px;margin:0 auto">
+      <i class="ti ti-plus"></i> Nuevo pedido
+    </button>
+  </div>
+</div>
+
+<script>
+const DS_PED = "collection://d3169e7f-2506-47f9-a95e-dd715df14980";
+const MCP_URL = "https://mcp.notion.com/mcp";
+// ⚠️ Reemplaza con tu API key de Anthropic
+const API_KEY = "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";
+
+const PRODUCTOS = [
+  "TOALLITAS ENGARZADAS 23*24 C/GOFRADA",
+  "PAPEL HIGIENICO IND PASTA MICRO T/45 (SITIOS FIJOS)",
+  "PAPEL HIGIENICO IND PASTA MICRO T/45 (EVENTOS)",
+  "PAPEL HIGIENICO DAMACEL D45 90MTRS 18R",
+  "PAPEL HIGIENICO INTERPLEGADO 250UDS",
+  "PAPEL SECA MANOS 6UNI.",
+  "JABON DE MANOS 5L.",
+  "AMBIENTADOR 5L",
+  "DESENGRASANTE NEUTRO 1L.",
+  "DESENGRASANTE NEUTRO 5L.",
+  "LEJIA 5L.",
+  "LEJIA CON DETERGENTE 2L.",
+  "LEJIA USO ALIMENTARIO 1L.",
+  "LAVAVAJILLAS MANUAL 5L.",
+  "LAVAVAJILLAS MAQUINA 5L.",
+  "FREGASUELOS 5L",
+  "LIMPIA CRISTALES",
+  "QUITAGRASAS 5L.",
+  "LIMPIADOR JABONOSO GQ 5L.",
+  "BOLSAS DE BASURA GRANDE 85*105 NEGRA",
+  "BOLSAS DE BASURA GRANDE 85*105 TRANSPARENTE",
+  "BOLSA DE BASURA 70*90 NEGRA",
+  "BOLSAS DE BASURA 52*60 NEGRA",
+  "BOLSAS DE BASURA PEQUEÑA 53*60 BLANCA",
+  "BOLSAS DE BASURA 115X150",
+  "GUANTES DE NITRILO NEGRO T/L T/M",
+  "GUANTES MAPA SUPERFOOD",
+  "FREGONA ALGODON",
+  "FREGONA MICROFIBRA",
+  "RECAMBIO MOPA 75CM",
+  "BAYETA MICROFIBRA",
+  "ESTROPAJOS VERDE C/ESPONJA 6UNI.",
+  "ESCOBA VIKINGA MOQUETA",
+  "ESCOBA CERDAS DURAS",
+  "RECOGEDOR C/PALO",
+  "MOPA BASTIDOR 75 CM.",
+  "PULVERIZADOR 1L.",
+  "CUBO DE FREGAR + ESCURRIDOR",
+  "MASCARILLA QUIRURGICA 25 UNI.",
+  "SERVILLETA 20X20",
+  "SERVILLETA 40X40",
+  "SERVILLETA CANGURO KRAFT / BLANCA",
+  "AZUCAR (10KG)",
+  "SAL FINA (5KG)",
+  "Leche entera sin lactosa 6L",
+  "Leche de soja 12L",
+  "PAPEL DE HORNO (500 uds)",
+  "FREGONAS 2U",
+  "PLUMERO",
+];
+const UNIDADES = ["unidad","caja","fardo","pack","garrafa","botella","rollo","par"];
+
+let lineas = [], lid = 0;
+
+function addLinea(prod='', cant=1, ud='unidad') {
+  const id = lid++;
+  lineas.push({id, prod, cant, ud});
+  renderLineas();
+}
+
+function removeLinea(id) {
+  lineas = lineas.filter(l => l.id !== id);
+  renderLineas();
+}
+
+function renderLineas() {
+  const c = document.getElementById('lineas');
+  if (!lineas.length) {
+    c.innerHTML = '<p style="font-size:12px;color:var(--text-muted);padding:4px 0 8px">Sin líneas. Pulsa el botón para añadir.</p>';
+    return;
+  }
+  c.innerHTML = lineas.map(l => `
+    <div class="linea">
+      <select onchange="updLinea(${l.id},'prod',this.value)">
+        <option value="">— Selecciona —</option>
+        ${PRODUCTOS.map(p=>`<option${l.prod===p?' selected':''}>${p}</option>`).join('')}
+      </select>
+      <input type="number" min="1" value="${l.cant}" placeholder="Cant." onchange="updLinea(${l.id},'cant',this.value)">
+      <select onchange="updLinea(${l.id},'ud',this.value)">
+        ${UNIDADES.map(u=>`<option${l.ud===u?' selected':''}>${u}</option>`).join('')}
+      </select>
+      <button class="btn-del" onclick="removeLinea(${l.id})" title="Quitar">×</button>
+    </div>`).join('');
+}
+
+function updLinea(id, f, v) {
+  const l = lineas.find(l=>l.id===id);
+  if (l) l[f] = f==='cant' ? parseInt(v)||1 : v;
+}
+
+async function enviar() {
+  const centro = document.getElementById('centro').value;
+  const fecha  = document.getElementById('fecha').value;
+  const urg    = document.getElementById('urgencia').value;
+  const libre  = document.getElementById('libre').value.trim();
+  const cat    = lineas.filter(l=>l.prod);
+
+  if (!centro) { showMsg('Selecciona tu centro antes de enviar.','e'); return; }
+  if (!cat.length && !libre) { showMsg('Añade al menos un producto o escribe en el campo de texto libre.','e'); return; }
+
+  const btn = document.getElementById('btn-enviar');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Enviando...';
+
+  const lineasStr = cat.map(l=>`· ${l.cant} ${l.ud} de ${l.prod}`).join('\n');
+  const titulo = `Pedido ${centro} — ${fecha || new Date().toISOString().substring(0,10)}`;
+  const notas = `${lineasStr}${libre?'\n\nNotas / productos adicionales:\n'+libre:''}${urg==='Sí'?'\n\n⚠️ URGENTE':''}`;
+
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6', max_tokens: 500,
+        messages: [{ role: 'user', content:
+          `Create a new page in Notion data source "${DS_PED}": Titulo (title): "${titulo}", Centro: "${centro}"${fecha?`, date:Fecha pedido:start: "${fecha}", date:Fecha pedido:is_datetime: 0`:''}, Estado: "Pendiente", Notas libres: "${notas.replace(/"/g,"'")}". Use notion-create-pages. Reply "ok".`
+        }],
+        mcp_servers: [{ type: 'url', url: MCP_URL, name: 'notion' }]
+      })
+    });
+    if (!r.ok) throw new Error('Error de conexión');
+    document.getElementById('form-area').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'block';
+    document.getElementById('success-msg').textContent =
+      `Pedido de ${centro} registrado correctamente. El equipo de almacén lo procesará próximamente.`;
+  } catch(e) {
+    showMsg('Error al enviar: ' + e.message + '. Inténtalo de nuevo.','e');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-send"></i> Enviar solicitud';
+  }
+}
+
+function showMsg(text, t) {
+  const el = document.getElementById('msg-global');
+  el.innerHTML = `<div class="msg m${t}">${text}</div>`;
+  el.scrollIntoView({behavior:'smooth'});
+  setTimeout(()=>el.innerHTML='',5000);
+}
+
+function resetForm() {
+  lineas = []; lid = 0;
+  document.getElementById('centro').selectedIndex = 0;
+  document.getElementById('fecha').value = '';
+  document.getElementById('urgencia').selectedIndex = 0;
+  document.getElementById('libre').value = '';
+  document.getElementById('msg-global').innerHTML = '';
+  renderLineas();
+  document.getElementById('form-area').style.display = 'block';
+  document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('btn-enviar').disabled = false;
+  document.getElementById('btn-enviar').innerHTML = '<i class="ti ti-send"></i> Enviar solicitud';
+}
+
+// Fecha por defecto: en 2 días
+const d = new Date(); d.setDate(d.getDate()+2);
+document.getElementById('fecha').value = d.toISOString().substring(0,10);
+addLinea(); addLinea();
+</script>
+</body>
+</html>
